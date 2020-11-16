@@ -19,6 +19,39 @@ function assertSamePaths(A, B) {
   );
 }
 
+function getSimpleSchema() {
+  var graph = new Graph.DirectedGraph();
+
+  // Nodes
+  graph.addNode('Project');
+  graph.addNode('Status');
+  graph.addNode('Task');
+  graph.addNode('Media');
+  graph.addNode('Draft');
+  graph.addNode('Draft_2');
+  graph.addNode('Draft_3');
+  graph.addNode('Comment');
+
+  // Edges
+  graph.addEdge('Project', 'Status', {name: 'status'});
+  graph.addEdge('Project', 'Task', {name: 'tasks'});
+  graph.addEdge('Project', 'Comment', {name: 'comments'});
+  graph.addEdge('Task', 'Status', {name: 'status'});
+  graph.addEdge('Task', 'Media', {name: 'media'});
+  graph.addEdge('Task', 'Draft', {name: 'drafts'});
+  graph.addEdge('Task', 'Task', {name: 'subTasks'});
+  graph.addEdge('Task', 'Comment', {name: 'comments'});
+  // graph.addEdge('Task', 'Comment', {name: 'privateComments'});
+  graph.addEdge('Draft', 'Draft_2', {name: 'draft_2'});
+  graph.addEdge('Draft_2', 'Draft_3', {name: 'draft_3a'});
+  // graph.addEdge('Draft_2', 'Draft_3', {name: 'draft_3b'});
+  graph.addEdge('Draft_2', 'Comment', {name: 'comment_short'});
+  graph.addEdge('Draft_3', 'Comment', {name: 'comments'});
+  graph.addEdge('Comment', 'Task', {name: 'commentTasks'});
+
+  return graph;
+}
+
 describe('graphology-simple-path', function() {
   it('should throw if given invalid arguments.', function() {
     assert.throws(function() {
@@ -48,6 +81,19 @@ describe('graphology-simple-path', function() {
       ['0', '2', '1', '3'],
       ['0', '1', '3'],
       ['0', '1', '2', '3']
+    ]);
+  });
+
+  it('should work with an example.', function() {
+    var graph = getSimpleSchema();
+
+    var paths = lib.allSimplePaths(graph, 'Project', 'Comment');
+
+    assertSamePaths(paths, [
+      ['Project', 'Comment'],
+      ['Project', 'Task', 'Comment'],
+      ['Project', 'Task', 'Draft', 'Draft_2', 'Comment'],
+      ['Project', 'Task', 'Draft', 'Draft_2', 'Draft_3', 'Comment']
     ]);
   });
 });
