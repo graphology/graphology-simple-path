@@ -56,92 +56,137 @@ function getSchema(multi) {
 }
 
 describe('graphology-simple-path', function() {
-  it('should throw if given invalid arguments.', function() {
-    assert.throws(function() {
-      lib.allSimplePaths(null);
-    }, /graphology/);
+  describe('#.allSimplePaths', function() {
+    it('should throw if given invalid arguments.', function() {
+      assert.throws(function() {
+        lib.allSimplePaths(null);
+      }, /graphology/);
 
-    assert.throws(function() {
-      var graph = new Graph();
-      lib.allSimplePaths(graph, 'test');
-    }, /source/);
+      assert.throws(function() {
+        var graph = new Graph();
+        lib.allSimplePaths(graph, 'test');
+      }, /source/);
 
-    assert.throws(function() {
-      var graph = new Graph();
-      graph.addNode('mary');
-      lib.allSimplePaths(graph, 'mary', 'test');
-    }, /target/);
-  });
-
-  it('should work properly.', function() {
-    var graph = complete(Graph.UndirectedGraph, 4);
-
-    var paths = lib.allSimplePaths(graph, '0', '3');
-
-    assertSamePaths(paths, [
-      ['0', '3'],
-      ['0', '2', '3'],
-      ['0', '2', '1', '3'],
-      ['0', '1', '3'],
-      ['0', '1', '2', '3']
-    ]);
-  });
-
-  it('should work with an example.', function() {
-    var graph = getSchema();
-
-    var paths = lib.allSimplePaths(graph, 'Project', 'Comment');
-
-    assertSamePaths(paths, [
-      ['Project', 'Comment'],
-      ['Project', 'Task', 'Comment'],
-      ['Project', 'Task', 'Draft', 'Draft_2', 'Comment'],
-      ['Project', 'Task', 'Draft', 'Draft_2', 'Draft_3', 'Comment']
-    ]);
-
-    var cycles = lib.allSimplePaths(graph, 'Task', 'Task');
-
-    assertSamePaths(cycles, [
-      ['Task', 'Comment', 'Task'],
-      ['Task', 'Task'],
-      ['Task', 'Draft', 'Draft_2', 'Comment', 'Task'],
-      ['Task', 'Draft', 'Draft_2', 'Draft_3', 'Comment', 'Task']
-    ]);
-  });
-
-  it('should work with a multigraph.', function() {
-    var graph = new Graph.MultiDirectedGraph();
-
-    graph.addNode(0);
-    graph.addNode(1);
-    graph.addNode(2);
-
-    for (var i = 0; i < 2; i++) {
-      graph.addEdge(0, 1);
-      graph.addEdge(0, 2);
-      graph.addEdge(1, 0);
-      graph.addEdge(1, 2);
-      graph.addEdge(2, 0);
-      graph.addEdge(2, 1);
-    }
-
-    assert.strictEqual(graph.size, 6 * i);
-
-    var paths = lib.allSimplePaths(graph, 0, 1);
-
-    assertSamePaths(paths, [
-      ['0', '1'],
-      ['0', '2', '1']
-    ]);
-
-    graph.edges('1', '2').forEach(function(edge) {
-      graph.dropEdge(edge);
+      assert.throws(function() {
+        var graph = new Graph();
+        graph.addNode('mary');
+        lib.allSimplePaths(graph, 'mary', 'test');
+      }, /target/);
     });
 
-    var paths = lib.allSimplePaths(graph, 0, 1);
+    it('should work properly.', function() {
+      var graph = complete(Graph.UndirectedGraph, 4);
 
-    assertSamePaths(paths, [
-      ['0', '1']
-    ]);
+      var paths = lib.allSimplePaths(graph, '0', '3');
+
+      assertSamePaths(paths, [
+        ['0', '3'],
+        ['0', '2', '3'],
+        ['0', '2', '1', '3'],
+        ['0', '1', '3'],
+        ['0', '1', '2', '3']
+      ]);
+    });
+
+    it('should work with an example.', function() {
+      var graph = getSchema();
+
+      var paths = lib.allSimplePaths(graph, 'Project', 'Comment');
+
+      assertSamePaths(paths, [
+        ['Project', 'Comment'],
+        ['Project', 'Task', 'Comment'],
+        ['Project', 'Task', 'Draft', 'Draft_2', 'Comment'],
+        ['Project', 'Task', 'Draft', 'Draft_2', 'Draft_3', 'Comment']
+      ]);
+
+      var cycles = lib.allSimplePaths(graph, 'Task', 'Task');
+
+      assertSamePaths(cycles, [
+        ['Task', 'Comment', 'Task'],
+        ['Task', 'Task'],
+        ['Task', 'Draft', 'Draft_2', 'Comment', 'Task'],
+        ['Task', 'Draft', 'Draft_2', 'Draft_3', 'Comment', 'Task']
+      ]);
+    });
+
+    it('should work with a multigraph.', function() {
+      var graph = new Graph.MultiDirectedGraph();
+
+      graph.addNode(0);
+      graph.addNode(1);
+      graph.addNode(2);
+
+      var i;
+
+      for (i = 0; i < 2; i++) {
+        graph.addEdge(0, 1);
+        graph.addEdge(0, 2);
+        graph.addEdge(1, 0);
+        graph.addEdge(1, 2);
+        graph.addEdge(2, 0);
+        graph.addEdge(2, 1);
+      }
+
+      assert.strictEqual(graph.size, 6 * i);
+
+      var paths = lib.allSimplePaths(graph, 0, 1);
+
+      assertSamePaths(paths, [
+        ['0', '1'],
+        ['0', '2', '1']
+      ]);
+
+      graph.edges('1', '2').forEach(function(edge) {
+        graph.dropEdge(edge);
+      });
+
+      paths = lib.allSimplePaths(graph, 0, 1);
+
+      assertSamePaths(paths, [
+        ['0', '1']
+      ]);
+    });
+  });
+
+  describe('#.allSimpleEdgePaths', function() {
+    it('should throw if given invalid arguments.', function() {
+      assert.throws(function() {
+        lib.allSimpleEdgePaths(null);
+      }, /graphology/);
+
+      assert.throws(function() {
+        var graph = new Graph();
+        lib.allSimpleEdgePaths(graph, 'test');
+      }, /source/);
+
+      assert.throws(function() {
+        var graph = new Graph();
+        graph.addNode('mary');
+        lib.allSimpleEdgePaths(graph, 'mary', 'test');
+      }, /target/);
+    });
+
+    it('should work properly.', function() {
+      var graph = new Graph.UndirectedGraph();
+
+      var i, j;
+
+      for (i = 0; i < 4; i++) {
+        for (j = i + 1; j < 4; j++) {
+          graph.mergeEdgeWithKey(i + '--' + j, i, j);
+        }
+      }
+
+      var paths = lib.allSimpleEdgePaths(graph, '0', '3');
+
+      assertSamePaths(paths, [
+        ['0--3'],
+        ['0--2', '2--3'],
+        ['0--2', '1--2', '1--3'],
+        ['0--1', '1--3'],
+        ['0--1', '1--2', '2--3']
+      ]);
+    });
   });
 });
