@@ -60,52 +60,13 @@ function allSimplePaths(graph, source, target) {
   if (!graph.hasNode(target))
     throw new Error('graphology-simple-path: expecting: could not find target node "' + target + '" in the graph.');
 
-  var stack = [graph.outboundNeighbors(source)];
-  var visited = StackSet.of(source);
+  source = '' + source;
+  target = '' + target;
 
-  var paths = [];
-
-  var children, child;
-
-  while (stack.length !== 0) {
-    children = stack[stack.length - 1];
-    child = children.pop();
-
-    if (!child) {
-      stack.pop();
-      visited.pop();
-    }
-
-    else {
-      if (visited.has(child))
-        continue;
-
-      if (child === target)
-        paths.push(visited.path(child));
-
-      visited.push(child);
-
-      if (!visited.has(target))
-        stack.push(graph.outboundNeighbors(child));
-      else
-        visited.pop();
-    }
-  }
-
-  return paths;
-}
-
-function allSimpleCycles(graph, source) {
-  if (!isGraph(graph))
-    throw new Error('graphology-simple-path: expecting a graphology instance.');
-
-  if (!graph.hasNode(source))
-    throw new Error('graphology-simple-path: expecting: could not find source node "' + source + '" in the graph.');
+  var cycle = source === target;
 
   var stack = [graph.outboundNeighbors(source)];
-  var visited = StackSet.of('§SOURCE§');
-
-  var target = source;
+  var visited = StackSet.of(cycle ? '§SOURCE§' : source);
 
   var paths = [],
       p;
@@ -127,7 +88,10 @@ function allSimpleCycles(graph, source) {
 
       if (child === target) {
         p = visited.path(child);
-        p[0] = source;
+
+        if (cycle)
+          p[0] = source;
+
         paths.push(p);
       }
 
@@ -144,4 +108,3 @@ function allSimpleCycles(graph, source) {
 }
 
 exports.allSimplePaths = allSimplePaths;
-exports.allSimpleCycles = allSimpleCycles;

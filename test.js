@@ -96,7 +96,7 @@ describe('graphology-simple-path', function() {
       ['Project', 'Task', 'Draft', 'Draft_2', 'Draft_3', 'Comment']
     ]);
 
-    var cycles = lib.allSimpleCycles(graph, 'Task');
+    var cycles = lib.allSimplePaths(graph, 'Task', 'Task');
 
     assertSamePaths(cycles, [
       ['Task', 'Comment', 'Task'],
