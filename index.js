@@ -95,4 +95,53 @@ function allSimplePaths(graph, source, target) {
   return paths;
 }
 
+function allSimpleCycles(graph, source) {
+  if (!isGraph(graph))
+    throw new Error('graphology-simple-path: expecting a graphology instance.');
+
+  if (!graph.hasNode(source))
+    throw new Error('graphology-simple-path: expecting: could not find source node "' + source + '" in the graph.');
+
+  var stack = [graph.outboundNeighbors(source)];
+  var visited = StackSet.of('§SOURCE§');
+
+  var target = source;
+
+  var paths = [],
+      p;
+
+  var children, child;
+
+  while (stack.length !== 0) {
+    children = stack[stack.length - 1];
+    child = children.pop();
+
+    if (!child) {
+      stack.pop();
+      visited.pop();
+    }
+
+    else {
+      if (visited.has(child))
+        continue;
+
+      if (child === target) {
+        p = visited.path(child);
+        p[0] = source;
+        paths.push(p);
+      }
+
+      visited.push(child);
+
+      if (!visited.has(target))
+        stack.push(graph.outboundNeighbors(child));
+      else
+        visited.pop();
+    }
+  }
+
+  return paths;
+}
+
 exports.allSimplePaths = allSimplePaths;
+exports.allSimpleCycles = allSimpleCycles;

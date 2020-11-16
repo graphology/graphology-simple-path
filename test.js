@@ -33,21 +33,21 @@ function getSimpleSchema() {
   graph.addNode('Comment');
 
   // Edges
-  graph.addEdge('Project', 'Status', {name: 'status'});
-  graph.addEdge('Project', 'Task', {name: 'tasks'});
-  graph.addEdge('Project', 'Comment', {name: 'comments'});
-  graph.addEdge('Task', 'Status', {name: 'status'});
-  graph.addEdge('Task', 'Media', {name: 'media'});
-  graph.addEdge('Task', 'Draft', {name: 'drafts'});
-  graph.addEdge('Task', 'Task', {name: 'subTasks'});
-  graph.addEdge('Task', 'Comment', {name: 'comments'});
-  // graph.addEdge('Task', 'Comment', {name: 'privateComments'});
-  graph.addEdge('Draft', 'Draft_2', {name: 'draft_2'});
-  graph.addEdge('Draft_2', 'Draft_3', {name: 'draft_3a'});
-  // graph.addEdge('Draft_2', 'Draft_3', {name: 'draft_3b'});
-  graph.addEdge('Draft_2', 'Comment', {name: 'comment_short'});
-  graph.addEdge('Draft_3', 'Comment', {name: 'comments'});
-  graph.addEdge('Comment', 'Task', {name: 'commentTasks'});
+  graph.addEdge('Project', 'Status', {label: 'status'});
+  graph.addEdge('Project', 'Task', {label: 'tasks'});
+  graph.addEdge('Project', 'Comment', {label: 'comments'});
+  graph.addEdge('Task', 'Status', {label: 'status'});
+  graph.addEdge('Task', 'Media', {label: 'media'});
+  graph.addEdge('Task', 'Draft', {label: 'drafts'});
+  graph.addEdge('Task', 'Task', {label: 'subTasks'});
+  graph.addEdge('Task', 'Comment', {label: 'comments'});
+  // graph.addEdge('Task', 'Comment', {label: 'privateComments'});
+  graph.addEdge('Draft', 'Draft_2', {label: 'draft_2'});
+  graph.addEdge('Draft_2', 'Draft_3', {label: 'draft_3a'});
+  // graph.addEdge('Draft_2', 'Draft_3', {label: 'draft_3b'});
+  graph.addEdge('Draft_2', 'Comment', {label: 'comment_short'});
+  graph.addEdge('Draft_3', 'Comment', {label: 'comments'});
+  graph.addEdge('Comment', 'Task', {label: 'commentTasks'});
 
   return graph;
 }
@@ -94,6 +94,15 @@ describe('graphology-simple-path', function() {
       ['Project', 'Task', 'Comment'],
       ['Project', 'Task', 'Draft', 'Draft_2', 'Comment'],
       ['Project', 'Task', 'Draft', 'Draft_2', 'Draft_3', 'Comment']
+    ]);
+
+    var cycles = lib.allSimpleCycles(graph, 'Task');
+
+    assertSamePaths(cycles, [
+      ['Task', 'Comment', 'Task'],
+      ['Task', 'Task'],
+      ['Task', 'Draft', 'Draft_2', 'Comment', 'Task'],
+      ['Task', 'Draft', 'Draft_2', 'Draft_3', 'Comment', 'Task']
     ]);
   });
 });
