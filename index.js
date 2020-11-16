@@ -258,9 +258,6 @@ function allSimpleEdgeGroupPaths(graph, source, target) {
   if (!isGraph(graph))
     throw new Error('graphology-simple-path.allSimpleEdgeGroupPaths: expecting a graphology instance.');
 
-  if (!graph.multi)
-    throw new Error('graphology-simple-path.allSimpleEdgeGroupPaths: not implemented for multi graphs.');
-
   if (!graph.hasNode(source))
     throw new Error('graphology-simple-path.allSimpleEdgeGroupPaths: expecting: could not find source node "' + source + '" in the graph.');
 

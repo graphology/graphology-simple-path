@@ -264,11 +264,6 @@ describe('graphology-simple-path', function() {
       }, /graphology/);
 
       assert.throws(function() {
-        var graph = new Graph({multi: false});
-        lib.allSimpleEdgeGroupPaths(graph);
-      }, /multi/);
-
-      assert.throws(function() {
         var graph = new Graph({multi: true});
         lib.allSimpleEdgeGroupPaths(graph, 'test');
       }, /source/);
@@ -347,6 +342,42 @@ describe('graphology-simple-path', function() {
           'Draft_2(draft_3a,draft_3b)Draft_3',
           'Draft_3(comments)Comment',
           'Comment(commentTasks)Task'
+        ]
+      ]);
+    });
+
+    it('should work with a simple graph.', function() {
+      var graph = getSchema();
+
+      var paths = lib.allSimpleEdgeGroupPaths(graph, 'Project', 'Comment')
+        .map(function(p) {
+          return p.map(function(edges) {
+            var source = graph.source(edges[0]);
+            var target = graph.target(edges[0]);
+
+            var labels = edges.map(function(edge) {
+              return graph.getEdgeAttribute(edge, 'label');
+            });
+
+            return source + '(' + labels.join(',') + ')' + target;
+          });
+        });
+
+      assertSamePaths(paths, [
+        ['Project(comments)Comment'],
+        ['Project(tasks)Task', 'Task(comments)Comment'],
+        [
+          'Project(tasks)Task',
+          'Task(drafts)Draft',
+          'Draft(draft_2)Draft_2',
+          'Draft_2(comment_short)Comment'
+        ],
+        [
+          'Project(tasks)Task',
+          'Task(drafts)Draft',
+          'Draft(draft_2)Draft_2',
+          'Draft_2(draft_3a)Draft_3',
+          'Draft_3(comments)Comment'
         ]
       ]);
     });
