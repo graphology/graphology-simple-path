@@ -20,7 +20,7 @@ function assertSamePaths(A, B) {
 }
 
 function getSchema(multi) {
-  var graph = new Graph.DirectedGraph();
+  var graph = multi ? new Graph.MultiDirectedGraph() : new Graph.DirectedGraph();
 
   // Nodes
   graph.addNode('Project');
@@ -161,6 +161,11 @@ describe('graphology-simple-path', function() {
       }, /source/);
 
       assert.throws(function() {
+        var graph = new Graph({multi: true});
+        lib.allSimpleEdgePaths(graph);
+      }, /multi/);
+
+      assert.throws(function() {
         var graph = new Graph();
         graph.addNode('mary');
         lib.allSimpleEdgePaths(graph, 'mary', 'test');
@@ -247,6 +252,101 @@ describe('graphology-simple-path', function() {
           ['Draft_2|draft_3a|Draft_3'],
           ['Draft_3|comments|Comment'],
           ['Comment|commentTasks|Task']
+        ]
+      ]);
+    });
+  });
+
+  describe('#.allSimpleEdgeGroupPaths', function() {
+    it('should throw if given invalid arguments.', function() {
+      assert.throws(function() {
+        lib.allSimpleEdgeGroupPaths(null);
+      }, /graphology/);
+
+      assert.throws(function() {
+        var graph = new Graph({multi: false});
+        lib.allSimpleEdgeGroupPaths(graph);
+      }, /multi/);
+
+      assert.throws(function() {
+        var graph = new Graph({multi: true});
+        lib.allSimpleEdgeGroupPaths(graph, 'test');
+      }, /source/);
+
+      assert.throws(function() {
+        var graph = new Graph({multi: true});
+        graph.addNode('mary');
+        lib.allSimpleEdgeGroupPaths(graph, 'mary', 'test');
+      }, /target/);
+    });
+
+    it('should work with an example.', function() {
+      var graph = getSchema(true);
+
+      var paths = lib.allSimpleEdgeGroupPaths(graph, 'Project', 'Comment')
+        .map(function(p) {
+          return p.map(function(edges) {
+            var source = graph.source(edges[0]);
+            var target = graph.target(edges[0]);
+
+            var labels = edges.map(function(edge) {
+              return graph.getEdgeAttribute(edge, 'label');
+            });
+
+            return source + '(' + labels.join(',') + ')' + target;
+          });
+        });
+
+      assertSamePaths(paths, [
+        ['Project(comments)Comment'],
+        ['Project(tasks)Task', 'Task(comments,privateComments)Comment'],
+        [
+          'Project(tasks)Task',
+          'Task(drafts)Draft',
+          'Draft(draft_2)Draft_2',
+          'Draft_2(comment_short)Comment'
+        ],
+        [
+          'Project(tasks)Task',
+          'Task(drafts)Draft',
+          'Draft(draft_2)Draft_2',
+          'Draft_2(draft_3a,draft_3b)Draft_3',
+          'Draft_3(comments)Comment'
+        ]
+      ]);
+
+      var cycles = lib.allSimpleEdgeGroupPaths(graph, 'Task', 'Task')
+        .map(function(p) {
+          return p.map(function(edges) {
+            var source = graph.source(edges[0]);
+            var target = graph.target(edges[0]);
+
+            var labels = edges.map(function(edge) {
+              return graph.getEdgeAttribute(edge, 'label');
+            });
+
+            return source + '(' + labels.join(',') + ')' + target;
+          });
+        });
+
+      assertSamePaths(cycles, [
+        [
+          'Task(comments,privateComments)Comment',
+          'Comment(commentTasks)Task'
+        ],
+        ['Task(subTasks)Task'],
+        [
+          'Task(drafts)Draft',
+          'Draft(draft_2)Draft_2',
+          'Draft_2(comment_short)Comment',
+          'Comment(commentTasks)Task'
+        ],
+        [
+          'Task(drafts)Draft',
+          'Draft(draft_2)Draft_2',
+          'Draft_2(draft_3a,draft_3b)Draft_3',
+          'Draft_3(comments)Comment',
+          'Comment(commentTasks)Task'
         ]
       ]);
     });

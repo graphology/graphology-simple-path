@@ -70,7 +70,7 @@ RecordStackSet.prototype.pop = function() {
 RecordStackSet.prototype.path = function(record) {
   return this.stack.slice(1).map(function(r) {
     return r[0];
-  }).concat(record[0]);
+  }).concat([record[0]]);
 };
 
 RecordStackSet.of = function(value) {
@@ -90,13 +90,13 @@ RecordStackSet.of = function(value) {
  */
 function allSimplePaths(graph, source, target) {
   if (!isGraph(graph))
-    throw new Error('graphology-simple-path: expecting a graphology instance.');
+    throw new Error('graphology-simple-path.allSimplePaths: expecting a graphology instance.');
 
   if (!graph.hasNode(source))
-    throw new Error('graphology-simple-path: expecting: could not find source node "' + source + '" in the graph.');
+    throw new Error('graphology-simple-path.allSimplePaths: expecting: could not find source node "' + source + '" in the graph.');
 
   if (!graph.hasNode(target))
-    throw new Error('graphology-simple-path: expecting: could not find target node "' + target + '" in the graph.');
+    throw new Error('graphology-simple-path.allSimplePaths: expecting: could not find target node "' + target + '" in the graph.');
 
   source = '' + source;
   target = '' + target;
@@ -158,6 +158,28 @@ function collectEdges(graph, source) {
   return records;
 }
 
+function collectMultiEdges(graph, source) {
+  var index = {};
+
+  var target;
+
+  graph.forEachOutboundEdge(source, function(edge, attr, ext1, ext2) {
+    target = source === ext1 ? ext2 : ext1;
+
+    if (!(target in index))
+      index[target] = [];
+
+    index[target].push(edge);
+  });
+
+  var records = [];
+
+  for (target in index)
+    records.push([index[target], target]);
+
+  return records;
+}
+
 /**
  * Function returning all the edge paths between source & target in the graph.
  *
@@ -168,13 +190,16 @@ function collectEdges(graph, source) {
  */
 function allSimpleEdgePaths(graph, source, target) {
   if (!isGraph(graph))
-    throw new Error('graphology-simple-path: expecting a graphology instance.');
+    throw new Error('graphology-simple-path.allSimpleEdgePaths: expecting a graphology instance.');
+
+  if (graph.multi)
+    throw new Error('graphology-simple-path.allSimpleEdgePaths: not implemented for multi graphs.');
 
   if (!graph.hasNode(source))
-    throw new Error('graphology-simple-path: expecting: could not find source node "' + source + '" in the graph.');
+    throw new Error('graphology-simple-path.allSimpleEdgePaths: expecting: could not find source node "' + source + '" in the graph.');
 
   if (!graph.hasNode(target))
-    throw new Error('graphology-simple-path: expecting: could not find target node "' + target + '" in the graph.');
+    throw new Error('graphology-simple-path.allSimpleEdgePaths: expecting: could not find target node "' + target + '" in the graph.');
 
   source = '' + source;
   target = '' + target;
@@ -220,5 +245,72 @@ function allSimpleEdgePaths(graph, source, target) {
   return paths;
 }
 
+/**
+ * Function returning all the compressed edge paths between source & target
+ * in the graph.
+ *
+ * @param  {Graph}  graph  - Target graph.
+ * @param  {string} source - Source node.
+ * @param  {string} target - Target node.
+ * @return {array}         - The found paths.
+ */
+function allSimpleEdgeGroupPaths(graph, source, target) {
+  if (!isGraph(graph))
+    throw new Error('graphology-simple-path.allSimpleEdgeGroupPaths: expecting a graphology instance.');
+
+  if (!graph.multi)
+    throw new Error('graphology-simple-path.allSimpleEdgeGroupPaths: not implemented for multi graphs.');
+
+  if (!graph.hasNode(source))
+    throw new Error('graphology-simple-path.allSimpleEdgeGroupPaths: expecting: could not find source node "' + source + '" in the graph.');
+
+  if (!graph.hasNode(target))
+    throw new Error('graphology-simple-path.allSimpleEdgeGroupPaths: expecting: could not find target node "' + target + '" in the graph.');
+
+  source = '' + source;
+  target = '' + target;
+
+  var cycle = source === target;
+
+  var stack = [collectMultiEdges(graph, source)];
+  var visited = RecordStackSet.of(cycle ? '§SOURCE§' : source);
+
+  var paths = [],
+      p;
+
+  var record, children, child;
+
+  while (stack.length !== 0) {
+    children = stack[stack.length - 1];
+    record = children.pop();
+
+    if (!record) {
+      stack.pop();
+      visited.pop();
+    }
+    else {
+      child = record[1];
+
+      if (visited.has(child))
+        continue;
+
+      if (child === target) {
+        p = visited.path(record);
+        paths.push(p);
+      }
+
+      visited.push(record);
+
+      if (!visited.has(target))
+        stack.push(collectMultiEdges(graph, child));
+      else
+        visited.pop();
+    }
+  }
+
+  return paths;
+}
+
 exports.allSimplePaths = allSimplePaths;
 exports.allSimpleEdgePaths = allSimpleEdgePaths;
+exports.allSimpleEdgeGroupPaths = allSimpleEdgeGroupPaths;
