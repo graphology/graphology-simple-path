@@ -19,7 +19,7 @@ function assertSamePaths(A, B) {
   );
 }
 
-function getSimpleSchema() {
+function getSchema(multi) {
   var graph = new Graph.DirectedGraph();
 
   // Nodes
@@ -41,13 +41,16 @@ function getSimpleSchema() {
   graph.addEdge('Task', 'Draft', {label: 'drafts'});
   graph.addEdge('Task', 'Task', {label: 'subTasks'});
   graph.addEdge('Task', 'Comment', {label: 'comments'});
-  // graph.addEdge('Task', 'Comment', {label: 'privateComments'});
   graph.addEdge('Draft', 'Draft_2', {label: 'draft_2'});
   graph.addEdge('Draft_2', 'Draft_3', {label: 'draft_3a'});
-  // graph.addEdge('Draft_2', 'Draft_3', {label: 'draft_3b'});
   graph.addEdge('Draft_2', 'Comment', {label: 'comment_short'});
   graph.addEdge('Draft_3', 'Comment', {label: 'comments'});
   graph.addEdge('Comment', 'Task', {label: 'commentTasks'});
+
+  if (multi) {
+    graph.addEdge('Task', 'Comment', {label: 'privateComments'});
+    graph.addEdge('Draft_2', 'Draft_3', {label: 'draft_3b'});
+  }
 
   return graph;
 }
@@ -85,7 +88,7 @@ describe('graphology-simple-path', function() {
   });
 
   it('should work with an example.', function() {
-    var graph = getSimpleSchema();
+    var graph = getSchema();
 
     var paths = lib.allSimplePaths(graph, 'Project', 'Comment');
 
