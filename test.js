@@ -188,5 +188,67 @@ describe('graphology-simple-path', function() {
         ['0--1', '1--2', '2--3']
       ]);
     });
+
+    it('should work with an example.', function() {
+      var graph = getSchema();
+
+      var paths = lib.allSimpleEdgePaths(graph, 'Project', 'Comment')
+        .map(function(p) {
+          return p.map(function(edge) {
+            return [
+              graph.source(edge) + '|' +
+              graph.getEdgeAttribute(edge, 'label') + '|' +
+              graph.target(edge)
+            ];
+          });
+        });
+
+      assertSamePaths(paths, [
+        [['Project|comments|Comment']],
+        [['Project|tasks|Task'], ['Task|comments|Comment']],
+        [
+          ['Project|tasks|Task'],
+          ['Task|drafts|Draft'],
+          ['Draft|draft_2|Draft_2'],
+          ['Draft_2|comment_short|Comment']
+        ],
+        [
+          ['Project|tasks|Task'],
+          ['Task|drafts|Draft'],
+          ['Draft|draft_2|Draft_2'],
+          ['Draft_2|draft_3a|Draft_3'],
+          ['Draft_3|comments|Comment']
+        ]
+      ]);
+
+      var cycles = lib.allSimpleEdgePaths(graph, 'Task', 'Task')
+        .map(function(p) {
+          return p.map(function(edge) {
+            return [
+              graph.source(edge) + '|' +
+              graph.getEdgeAttribute(edge, 'label') + '|' +
+              graph.target(edge)
+            ];
+          });
+        });
+
+      assertSamePaths(cycles, [
+        [['Task|comments|Comment'], ['Comment|commentTasks|Task']],
+        [['Task|subTasks|Task']],
+        [
+          ['Task|drafts|Draft'],
+          ['Draft|draft_2|Draft_2'],
+          ['Draft_2|comment_short|Comment'],
+          ['Comment|commentTasks|Task']
+        ],
+        [
+          ['Task|drafts|Draft'],
+          ['Draft|draft_2|Draft_2'],
+          ['Draft_2|draft_3a|Draft_3'],
+          ['Draft_3|comments|Comment'],
+          ['Comment|commentTasks|Task']
+        ]
+      ]);
+    });
   });
 });

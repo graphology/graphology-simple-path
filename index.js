@@ -205,10 +205,6 @@ function allSimpleEdgePaths(graph, source, target) {
 
       if (child === target) {
         p = visited.path(record);
-
-        // if (cycle)
-        //   p[0] = source;
-
         paths.push(p);
       }
 
