@@ -105,4 +105,40 @@ describe('graphology-simple-path', function() {
       ['Task', 'Draft', 'Draft_2', 'Draft_3', 'Comment', 'Task']
     ]);
   });
+
+  it('should work with a multigraph.', function() {
+    var graph = new Graph.MultiDirectedGraph();
+
+    graph.addNode(0);
+    graph.addNode(1);
+    graph.addNode(2);
+
+    for (var i = 0; i < 2; i++) {
+      graph.addEdge(0, 1);
+      graph.addEdge(0, 2);
+      graph.addEdge(1, 0);
+      graph.addEdge(1, 2);
+      graph.addEdge(2, 0);
+      graph.addEdge(2, 1);
+    }
+
+    assert.strictEqual(graph.size, 6 * i);
+
+    var paths = lib.allSimplePaths(graph, 0, 1);
+
+    assertSamePaths(paths, [
+      ['0', '1'],
+      ['0', '2', '1']
+    ]);
+
+    graph.edges('1', '2').forEach(function(edge) {
+      graph.dropEdge(edge);
+    });
+
+    var paths = lib.allSimplePaths(graph, 0, 1);
+
+    assertSamePaths(paths, [
+      ['0', '1']
+    ]);
+  });
 });
